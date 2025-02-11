@@ -1,0 +1,143 @@
+if pressed(
+
+--player character
+function init_player()
+	spawnx=34*8+4
+	spawny=27*8
+	ply={
+	x=spawnx,
+	y=spawny,
+	hs=0,vs=0,
+	fric=0.25,
+	spd=1,
+	jump=-3.25,
+	ldir=0,
+	jumped=false,
+	flip=false,
+	lanim=0,
+	box={0,0,7,7}
+	}
+	dead=false
+	gravity=0.25
+	jumps=1
+	gravpotion = false
+	reverseState = false
+	init_dialog()
+end
+
+function kill_player()
+	if not dead then
+		dead=true
+	end
+end
+
+function kill_player()
+	if not dead then
+		dead=true
+	end
+end
+
+--enemies
+
+function init_enemies()
+	enemies={}
+	etime=0
+	--snails
+	add_enemy(10,15,2)
+end
+
+function add_enemy(xmin,xmax,ypos)
+	local e={
+	x=xx*8,y=yy*8,id=typ,hs=0.25,vs=0,box={0,0,7,7}
+	}
+	if type==2 then
+		e.box={0,2,7,6}
+		e.dir=0
+	end
+	add(enemies,e)
+end
+
+function update_enemies()
+	etime+=1
+	for e in all(enemies) do
+		if not (e.x < cx-8 or e.y < cy-8 or e.x > cx+128 or e.y > cy+128) then
+			if e.id == 1 then
+				if cmap(e,e.x+e.hs,e.y) or not cmap(e,e.x+e.hs+(8*sgn(e.hs)),e.y+1) then
+					e.hs*=-1
+				end
+				e.x += e.hs
+				--player col
+				if coll(ply,e) and not dead then
+					if ply.vs > gravity then
+						sfx(27,2)
+						ply.vs=ply.jump/1.25
+						jumps=0
+						if(doublejump) jumps=1
+						explode(e.x+3,e.y+3,2,10,0.25,5)
+						del(enemies,e)
+					else
+						kill_player()
+					end
+				end
+			else
+				if point_distance(e.x,e.y,ply.x,ply.y) <= 52 then
+					e.dir=atan2(ply.y-e.y,ply.x-e.x)
+					if(dead) e.dir+=0.5
+					e.hs=sin(e.dir)*0.3
+					e.vs=cos(e.dir)*0.3
+					e.x+=e.hs
+					e.y+=e.vs
+					
+					if coll(ply,e) and not dead then
+						if ply.vs > gravity then
+							sfx(27,2)
+							ply.vs=ply.jump/1.25
+							jumps=0
+							if(doublejump) jumps=1
+							explode(e.x+3,e.y+3,2,10,0.25,5)
+							del(enemies,e)
+						else
+							kill_player()
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+function item_get(sp)
+	sfx(19,3)
+	itemget=1
+	itemgot=sp
+	plyy=ply.y
+	if(sp==1 or sp==61)itemtxt = "PLATFORM SHIFTER"
+	if(sp==2)itemtxt = "GRAVITY POSTION"
+end
+
+
+
+
+-- Movement controls
+    if btn(0) then ply.x = ply.x - 1 end -- Left
+    if btn(1) then ply.x = ply.x + 1 end -- Right
+    if btn(2) then ply.y = ply.y - 3 end -- Up (jump)
+    if btn(3) then ply.y = ply.y + 1 end -- Down
+	
+	if btn(5) then
+    gravity = -gravity
+	end
+
+	if btn(4) then
+		if left then
+			for i = 1, #platStrip do
+				platStrip[i].xpos = platStrip[i].xpos + (i + platStrip[i].switchGap)
+			end
+		end
+
+		if right then
+			for i = 1, #platStrip do
+				platStrip[i].xpos = platStrip[i].xpos - (i + platStrip[i].switchGap)
+			end
+		end
+	end
